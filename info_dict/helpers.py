@@ -64,21 +64,11 @@ class ConcatableDict(dict):
     Important: will give preference to the dictionary-like object on the
     right-hand side of the equation should keys overlaps.
     """
-
-    def _join_dicts(self, other, overwrite=False):
-        """A private method for joining two dictionary-like objects together.
-        :param other: The other dictionary to join with.
-        :param overwrite: Whether the other dictionary overwrites this one or
-            visa versa.
-        :return: A new ConcatableDict instance consisting of the joined objects
-        """
-        new_dict = ConcatableDict(self)
-        set_method = new_dict.__setitem__ if overwrite else new_dict.setdefault
-        # Idiomatic for dict-like objects to be iterable over their keys and
-        # have __getitem__ for their values.
-        for key in other:
-            set_method(key, other[key])
-
+    @staticmethod
+    def join_dicts(dicta, dictb):
+        """Joins two dictionaries"""
+        new_dict = ConcatableDict(dicta)
+        new_dict.update(dictb)
         return new_dict
 
     def __add__(self, other):
@@ -88,7 +78,7 @@ class ConcatableDict(dict):
         :param other: The other dictionary-like object to combine with.
         :return: A new DictConcatWrapper object with the combined dictionaries.
         """
-        return self._join_dicts(other, overwrite=True)
+        return ConcatableDict.join_dicts(self, other)
 
     def __radd__(self, other):
         """Right-hand side addition overloader.
@@ -97,10 +87,10 @@ class ConcatableDict(dict):
         :param other: The other dictionary-like object to combine with.
         :return: A new DictConcatWrapper object with the combined dictionaries.
         """
-        return self._join_dicts(other)
+        return ConcatableDict.join_dicts(other, self)
 
     def copy(self):
         """Overrides the dict.copy method to return a ConcatableDict type.
         :return: ConcatableDict copy.
         """
-        return ConcatableDict(super(ConcatableDict, self).copy())
+        return ConcatableDict(self)
